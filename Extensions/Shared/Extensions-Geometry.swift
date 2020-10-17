@@ -1,10 +1,3 @@
-//
-//  Extensions-Geometry-Shared.swift
-//  test
-//
-//  Created by Tyler Hall on 10/11/20.
-//
-
 import CoreGraphics
 
 extension CGPoint {
@@ -60,7 +53,7 @@ extension Array where Element == CGPoint {
         }
     }
 
-    // This only works on arrays with 4 points (rectangles)
+    // This only works on arrays with 4 points
     func oppositeVertexIndex(vertexIndex: Int) -> Int {
         guard count == 4 else { fatalError() }
         switch vertexIndex {
@@ -92,7 +85,6 @@ struct Line {
     
     var slope: CGFloat? {
         guard p2.x - p1.x != 0 else { return nil }
-
         return (p2.y - p1.y) / (p2.x - p1.x)
     }
 
