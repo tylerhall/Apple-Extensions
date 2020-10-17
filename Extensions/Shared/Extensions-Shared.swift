@@ -78,19 +78,19 @@ extension Date {
     }
 
     // Date.unstringify("1584039099.486827") -> Mar 12, 2020 at 1:51 PM
-    static func unstringify(_ ts: String) -> Date {
-        let dbl = Double(ts) ?? 0
-        return Date(timeIntervalSince1970: dbl)
+    static func unstringify(_ ts: String) -> Date? {
+        if let dbl = Double(ts) {
+            return Date(timeIntervalSince1970: dbl)
+        }
+        return nil
     }
 
-    func addMonth(n: Int) -> Date {
-        let cal = NSCalendar.current
-        return cal.date(byAdding: .month, value: n, to: self)!
+    func addMonth(n: Int) -> Date? {
+        return Calendar.current.date(byAdding: .month, value: n, to: self)
     }
 
-    func addDay(n: Int) -> Date {
-        let cal = NSCalendar.current
-        return cal.date(byAdding: .day, value: n, to: self)!
+    func addDay(n: Int) -> Date? {
+        return Calendar.current.date(byAdding: .day, value: n, to: self)
     }
     
     var month: Int {
@@ -170,6 +170,11 @@ extension Double {
 }
 
 extension FileManager {
+    // Given a basename such as "My Picture" and fileExtension "jpg",
+    // it will produce a unique, seqential filename such as "My Picuture 1.jpg"
+    // that does not exist in directoryURL. If the directory already contained
+    // "My Picuture.jpg", "My Picuture 1.jpg", "My Picuture 2.jpg", this will
+    // return "My Picuture 3.jpg".
     func uniqueFileURL(directoryURL: URL, basename: String, fileExtension: String?) -> URL {
         var fullPathURL = directoryURL.appendingPathComponent(basename)
         if let ext = fileExtension {
@@ -191,6 +196,8 @@ extension FileManager {
 }
 
 extension NSAttributedString {
+    // Haphazard solution that returns the range of a line of text at a given position,
+    // where a line is delimited by newlines.
     func rangeOfLineAtLocation(_ location: Int) -> NSRange {
         if string.character(location).isNewline {
             var start = location
@@ -348,8 +355,8 @@ extension String {
         return nil
     }
 
-    func formatAsCurrency() -> String {
-        return number()?.doubleValue.formatAsCurrency() ?? Double(exactly: 0)!.formatAsCurrency()
+    func formatAsCurrency() -> String? {
+        return number()?.doubleValue.formatAsCurrency()
     }
 
     func substring(to : Int) -> String {
@@ -513,20 +520,13 @@ extension String {
     func countSentences() -> Int {
         let s = self
         var r = [Range<String.Index>]()
-        let t = s.linguisticTags(
-            in: s.startIndex..<s.endIndex,
-            scheme: NSLinguisticTagScheme.lexicalClass.rawValue,
-            tokenRanges: &r)
+        let t = s.linguisticTags(in: s.startIndex..<s.endIndex, scheme: NSLinguisticTagScheme.lexicalClass.rawValue, tokenRanges: &r)
         var result = [String]()
-        let ixs = t.enumerated().filter {
-            $0.1 == "SentenceTerminator"
-            }.map {r[$0.0].lowerBound}
+        let ixs = t.enumerated().filter { $0.1 == "SentenceTerminator" }.map { r[$0.0].lowerBound }
         var prev = s.startIndex
         for ix in ixs {
             let r = prev...ix
-            result.append(
-                s[r].trimmingCharacters(
-                    in: NSCharacterSet.whitespaces))
+            result.append(s[r].trimmingCharacters(in: NSCharacterSet.whitespaces))
             prev = s.index(after: ix)
         }
         return result.count
